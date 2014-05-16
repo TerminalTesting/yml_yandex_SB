@@ -1,0 +1,51 @@
+﻿<!ELEMENT yml_catalog (shop)>
+<!ATTLIST yml_catalog
+    date CDATA #REQUIRED>
+
+<!ELEMENT shop (name, company, url, currencies, categories, brands, brandCategories, offers)>
+
+<!ELEMENT currencies (currency+)>
+<!ELEMENT currency EMPTY>
+<!ATTLIST currency
+    id (RUR|RUB|USD|BYR|KZT|EUR|UAH) #REQUIRED
+    rate CDATA "1"
+    plus CDATA "0">
+
+<!ELEMENT categories (category+)>
+<!ELEMENT category (#PCDATA)>
+<!ATTLIST category
+    id CDATA #REQUIRED
+    parentId CDATA #IMPLIED>
+
+<!ELEMENT brands (brand+)>
+<!ELEMENT brand (name, price?, currencyId?, url)>
+<!ATTLIST brand
+    id CDATA #REQUIRED>
+
+<!ELEMENT brandCategories (brandCategory+)>
+<!ELEMENT brandCategory (price?, currencyId?, url, categoryId, brandId)>
+<!ATTLIST brandCategory
+    id CDATA #REQUIRED>
+
+<!ELEMENT offers (offer+)>
+<!ELEMENT offer (url, price?, currencyId?, categoryId, vendor, name, description?, param*)>
+<!ATTLIST offer
+    id CDATA #IMPLIED
+    type (vendor.model | book | audiobook | artist.title | tour | ticket | event-ticket) #IMPLIED
+    available (true | false) #IMPLIED>
+
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT price (#PCDATA)>
+<!ELEMENT vendor (#PCDATA)>
+<!ELEMENT currencyId (#PCDATA)>
+<!ELEMENT brandId (#PCDATA)>
+<!ELEMENT categoryId (#PCDATA)>
+<!ATTLIST categoryId
+    type (Yandex | Torg | Own) "Own" >
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT param (#PCDATA)>
+<!ATTLIST param
+    name CDATA #REQUIRED
+    unit CDATA #IMPLIED>
+<!ELEMENT date (#PCDATA)>

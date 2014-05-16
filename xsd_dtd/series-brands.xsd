@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="yml_catalog">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="shop" minOccurs="1" maxOccurs="1" />
+			</xs:sequence>
+			<xs:attribute name="date" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="shop" >
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="name" 				minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="company" 			minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="url" 				minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="currencies" 		minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="categories" 		minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="brands" 			minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="brandCategories" 	minOccurs="1" maxOccurs="1"/>
+				<xs:element ref="offers" 			minOccurs="1" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:keyref name="categoryFK" refer="categoryPK">
+			<xs:selector xpath="offers/offer/categoryId"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+		<xs:keyref name="currencyFK" refer="currency.pk">
+			<xs:selector xpath="offers/offer/currencyId"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+
+		<xs:keyref name="currencyFK_1" refer="currency.pk">
+			<xs:selector xpath="brands/brand/currencyId"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+	
+		<xs:keyref name="categoryFK_1" refer="categoryPK">
+			<xs:selector xpath="brands/brand/categoryId"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+		
+		<xs:keyref name="brandFK" refer="brandPK">
+			<xs:selector xpath="offers/offer/brandId"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+	</xs:element>
+	<xs:element name="currencies">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="currency" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+		<xs:key name="currency.pk">
+			<xs:selector xpath="currency"/>
+			<xs:field xpath="@id"/>
+		</xs:key>
+	</xs:element>
+	<xs:element name="currency">
+		<xs:complexType>
+			<xs:attribute name="id" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="RUR" />
+						<xs:enumeration value="RUB" />
+						<xs:enumeration value="USD" />
+						<xs:enumeration value="BYR" />
+						<xs:enumeration value="KZT" />
+						<xs:enumeration value="EUR" />
+						<xs:enumeration value="UAH" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute default="1" name="rate" type="xs:string" />
+			<xs:attribute default="0" name="plus" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="categories">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element  ref="category" minOccurs="1" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+		<xs:key name="categoryPK">
+			<xs:selector xpath="category"/>
+			<xs:field xpath="@id"/>
+		</xs:key>
+	</xs:element>
+	<xs:element name="category">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="id" 		type="xs:string" use="required" />
+					<xs:attribute name="parentId" 	type="xs:string" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="brands">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element  ref="brand" minOccurs="1" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+		<xs:key name="brandPK">
+			<xs:selector xpath="brand"/>
+			<xs:field xpath="@id"/>
+		</xs:key>
+	</xs:element>
+	<xs:element name="brand">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="name" 			minOccurs="1"/>
+				<xs:element ref="price" 		minOccurs="0"/>
+				<xs:element ref="currencyId" 	minOccurs="0" />
+				<xs:element ref="url" 			minOccurs="1"/>
+			</xs:sequence>
+			<xs:attribute name="id" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minExclusive value="0"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="brandCategories">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="brandCategory" minOccurs="1" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="brandCategory">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="price" 		minOccurs="0" />
+				<xs:element ref="currencyId" 	minOccurs="0"  />
+				<xs:element ref="url" />
+				<xs:element ref="categoryId" />
+				<xs:element ref="brandId" />
+			</xs:sequence>
+			<xs:attribute name="id" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minExclusive value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="offers">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="offer" minOccurs="1" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:key name="offer.pk">
+			<xs:selector xpath="offer"/>
+			<xs:field xpath="@id"/>
+		</xs:key>
+	</xs:element>
+	<xs:element name="offer">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="url" 			minOccurs="1" maxOccurs="1" />
+				<xs:element ref="price" 		minOccurs="1" maxOccurs="1" />
+				<xs:element ref="currencyId" 	minOccurs="1" maxOccurs="1" />
+				<xs:element ref="categoryId" 	minOccurs="1" maxOccurs="1" />
+				<xs:element ref="vendor" 		minOccurs="1" maxOccurs="1"  />
+				<xs:element ref="name" 			minOccurs="1" maxOccurs="1" />
+				<xs:element ref="description" 	minOccurs="1" maxOccurs="1" />
+				<xs:element ref="param" 		minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="id" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:minExclusive value="0" />
+						<xs:maxExclusive value="9999999999999999999"></xs:maxExclusive>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="vendor.model" />
+						<xs:enumeration value="book" />
+						<xs:enumeration value="audiobook" />
+						<xs:enumeration value="artist.title" />
+						<xs:enumeration value="tour" />
+						<xs:enumeration value="ticket" />
+						<xs:enumeration value="event-ticket" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="available">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="true" />
+						<xs:enumeration value="false" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="company" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:whiteSpace value="collapse"/>
+				<xs:minLength value="1"/>
+				<xs:pattern value=".+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="url" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:anyURI"/>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="price" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:float">
+				<xs:pattern value="\d+.\d\d"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="vendor" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:whiteSpace value="collapse"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>	
+	<xs:element name="currencyId" type="xs:string" />
+	<xs:element name="brandId" type="xs:int" />
+	<xs:element name="categoryId">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:int">
+					<xs:attribute default="Own" name="type">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="Yandex" />
+								<xs:enumeration value="Torg" />
+								<xs:enumeration value="Own" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="name" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:whiteSpace value="collapse"/>
+				<xs:minLength value="1"/>
+				<xs:pattern value=".+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="description" nillable="false">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:whiteSpace value="collapse"/>
+				<xs:minLength value="1"/>
+				<xs:pattern value=".+"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="param">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="name" type="xs:string" use="required" />
+					<xs:attribute name="unit" type="xs:string" />
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="date" type="xs:string" />
+</xs:schema>
+
