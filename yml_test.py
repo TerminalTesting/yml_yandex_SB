@@ -147,6 +147,12 @@ class YMLTest(unittest.TestCase):
             
             delivery_tag=element.find('delivery')
 
+            off_url = element.find('url').text
+            DPD = '%3Fdcid%3D' in off_url
+            if DPD:
+                DPDcity = int(off_url[off_url.find('%3Fdcid%3D')+10:off_url.find('%26')])#поиск параметра id города и преобразование в integer
+            
+
             cnt+=1
             # получаем параметры товара из БД
             item=session.query( Goods, Goods_stat, Region, Goods_price, Goods_section, Goods_block.name, Goods_block.delivery_type, Goods_block.flag_self_delivery).\
@@ -174,6 +180,14 @@ class YMLTest(unittest.TestCase):
                 print 'ID товара: ', element.attrib['id'] ,' Цена у данного товара равна нулю. '
                 print '-'*80
 
+            elif item[1].status == 5 and DPD != True:
+                item_price = item[3].price_supplier
+                if int(float(price_tag.text))!= int(item_price):
+                    stat+=1
+                    print 'Ошибка в теге <PRICE>: Цена поставщика'
+                    print 'ID товара: ', element.attrib['id'] ,' значение в файле:',int(float(price_tag.text)), ' значение в базе данных:', int(item_price)
+                    print '-'*80
+
             else:
                 actions_goods = session.query(Action_goods).group_by(Action_goods.action_id).\
                                                             filter(Action_goods.goods_id == item[0].id).\
@@ -194,22 +208,30 @@ class YMLTest(unittest.TestCase):
                             action_price = action_price[0][0]
                             main_price = item[3].price if item[1].status != 5 else item[3].price_supplier
 
-                            if int(action_price) > int(main_price) and actions_goods[0].action_id not in (13,):
-                                item_price = main_price
-                            elif int(action_price) < int(main_price) and actions_goods[0].action_id in (13,):
-                                item_price = main_price
+                            #if int(action_price) > int(main_price) and actions_goods[0].action_id not in (13,):
+                            #    item_price = main_price
+                            #elif int(action_price) < int(main_price) and actions_goods[0].action_id in (13,):
+                            #    item_price = main_price
+                            #else:
+                            #    item_price = action_price
+
+
+                            if action_price < main_price and actions_goods[0].action_id not in (13,) and int(action_price) != 0:
+                                if int(float(price_tag.text)) != int(action_price):
+                                    stat+=1
+                                    print 'Ошибка в теге <PRICE>: ЦЕНА АКЦИОННАЯ'
+                                    print 'ID товара: ', element.attrib['id'] ,' значение в файле:', int(float(price_tag.text)), ' значение в базе данных:', int(action_price)
+                                    print '-'*80
                             else:
-                                item_price = action_price
-
-
-                            if int(float(price_tag.text)) != int(item_price):
-                                stat+=1
-                                print 'Ошибка в теге <PRICE>: ЦЕНА АКЦИОННАЯ'
-                                print 'ID товара: ', element.attrib['id'] ,' значение в файле:', int(float(price_tag.text)), ' значение в базе данных:', int(item_price)
-                                print '-'*80
+                                item_price = item[3].price
+                                if int(float(price_tag.text))!= int(item_price):
+                                    stat+=1
+                                    print 'Ошибка в теге <PRICE>:'
+                                    print 'ID товара: ', element.attrib['id'] ,' значение в файле:',int(float(price_tag.text)), ' значение в базе данных:', int(item_price)
+                                    print '-'*80
 
                         else:
-                            item_price = item[3].price if item[1].status != 5 else item[3].price_supplier            
+                            item_price = item[3].price
                             if int(float(price_tag.text))!= int(item_price):
                                 stat+=1
                                 print 'Ошибка в теге <PRICE>:'
@@ -218,7 +240,7 @@ class YMLTest(unittest.TestCase):
 
                        
                     else:
-                        item_price = item[3].price if item[1].status != 5 else item[3].price_supplier            
+                        item_price = item[3].price
                         if int(float(price_tag.text))!= int(item_price):
                     
                             stat+=1
@@ -228,7 +250,7 @@ class YMLTest(unittest.TestCase):
 
 
                 else:
-                    item_price = item[3].price if item[1].status != 5 else item[3].price_supplier            
+                    item_price = item[3].price
                     if int(float(price_tag.text))!= int(item_price):
                     
                         stat+=1
@@ -239,7 +261,11 @@ class YMLTest(unittest.TestCase):
 
 
             #тег статуса <available>
-            if (element.attrib['available'] in ('true', 'True') ) != ( item[1].status==1 ):
+            if DPD == True:
+                item_available = False
+            else:
+                item_available = ( item[1].status==1 )
+            if (element.attrib['available'] in ('true', 'True') ) != item_available:
                 stat+=1
                 print 'Ошибка в теге <AVAILABLE>:'
                 print 'ID товара: ', element.attrib['id'] ,' значение в файле:',element.attrib['available'], ' значение в базе данных:',item[1].status==1, item[1].status
@@ -255,7 +281,7 @@ class YMLTest(unittest.TestCase):
            
           
         # конец теста
-        assert stat==0, (u'Errors:%d')%(stat)
+        assert stat==0, (u'Errors:%d\nDPD:%s')%(stat,DPD)
     
     def test_yml_3(self):
         """  проверка корректности ( доступности ) ссылки на товар (полный перебор тест длится около 4 часов)"""
