@@ -160,11 +160,9 @@ class YMLTest(unittest.TestCase):
                         join(Goods_price, (Goods.id==Goods_price.goods_id)  ).\
                         join(Goods_section, (Goods_section.guid==Goods.section_guid)  ).\
                         join(Goods_block, (Goods_block.id==Goods.block_id) ).\
-                        join(Supplier_price, Supplier_price.goods_id == Goods.id).\
                         filter(Goods.id==element.attrib['id']).\
                         filter(Region.domain==DOMAIN).\
                         filter( (Goods_stat.city_id== Region.id) & (Goods_price.price_type_guid==Region.price_type_guid) ).\
-                        filter( Supplier_price.price_type_guid == Region.price_type_guid ).\
                         first()
 
             # в выгрузке есть а в БД нет ид товара
@@ -183,7 +181,11 @@ class YMLTest(unittest.TestCase):
                 print '-'*80
 
             elif item[1].status == 5 and DPD != True:
-                item_price = item[11].price_supplier
+                #if sipplier status used - take supplier price from database
+                item_price = session.query(Supplier_price.price_supplier).\
+                        		   filter( (Supplier_price.goods_id == element.attrib['id']) & (Supplier_price.price_type_guid == item[3].price_type_guid) ).\
+                        		   first()[0]
+
                 if int(float(price_tag.text))!= int(item_price):
                     stat+=1
                     print 'Ошибка в теге <PRICE>: Цена поставщика'
